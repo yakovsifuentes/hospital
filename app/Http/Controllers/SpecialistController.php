@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Helpers\JwtAuth;
 use App\specialty;
+use app\Helpers\AdminAuth;
 
 class SpecialistController extends Controller
 {
@@ -19,8 +20,7 @@ class SpecialistController extends Controller
         'speciality' => $speciality,
         'status' => 'success'
         ),200);  
-    }
-    
+    }   
     
     // Registrar una especialidad
     public function store(Request $request){
@@ -31,39 +31,52 @@ class SpecialistController extends Controller
         $checkToken = $jwtAuth->checkToken($hash);
 
         if($checkToken){
-            
-            // Recibir los datos
-            $json = $request->input('json', null);
-            $params = json_decode($json);
-            $params_array = json_decode($json, true);
-            
-            
-            // Validacion
-            $validate = \Validator::make($params_array,[
-                'name' => 'required'
-            ]);
 
-            if($validate->fails()){
-                return response()->json($validate->errors(),400);
+            //Atenticar usuario administrador
+            $adminAuth = new AdminAuth();
+            $user = $adminAuth->auth($hash);
+
+            if($user == true){
+                // Recibir los datos
+                $json = $request->input('json', null);
+                $params = json_decode($json);
+                $params_array = json_decode($json, true);
+                
+                
+                // Validacion
+                $validate = \Validator::make($params_array,[
+                    'name' => 'required'
+                ]);
+
+                if($validate->fails()){
+                    return response()->json($validate->errors(),400);
+                }
+
+                // Guardar la especialidad
+                $speciality = new Specialty();
+                $speciality->name = $params->name;
+
+                $speciality->save();
+
+                $data = array(
+                    'speciality' => $speciality,
+                    'status' => 'success',
+                    'code' => 200
+                    );
             }
-
-            // Guardar la especialidad
-            $speciality = new Specialty();
-            $speciality->name = $params->name;
-
-            $speciality->save();
-
-            $data = array(
-                'speciality' => $speciality,
-                'status' => 'success',
-                'code' => 200
+            if($user == false){
+                $data = array(
+                    'message' => 'No tienes permisos de esta operacion',
+                    'status' => 'error',
+                    'code' => 400 
                 );
+            }
 
         }else{
            $data = array(
                'message' => 'Login incorrecto',
                'status' => 'error',
-               'code' => 400
+               'code' => 300
            );
         }
 
@@ -80,28 +93,42 @@ class SpecialistController extends Controller
         $checkToken = $jwtAuth->checkToken($hash);
 
         if($checkToken){
-        
-            $json = $request->input('json', null);
-            $params = json_decode($json);
-            $params_array = json_decode($json, true);
 
-            // Validar los datos
-            $validate = \Validator::make($params_array, [
-                'name' => 'required'
-            ]);
+            // Validar permisos de Administrador
+            $adminAuth = new AdminAuth();
+            $user = $adminAuth->auth($hash);
 
-            if($validate->fails()){
-                return response()->json($validate->errors(),400);
+            if($user == true){
+                
+                $json = $request->input('json', null);
+                $params = json_decode($json);
+                $params_array = json_decode($json, true);
+    
+                // Validar los datos
+                $validate = \Validator::make($params_array, [
+                    'name' => 'required'
+                ]);
+    
+                if($validate->fails()){
+                    return response()->json($validate->errors(),400);
+                }
+    
+                //Actualizar el registro
+                $speciality = Specialty::where('id', $id)->update($params_array);
+    
+                $data = array(
+                    'speciality' => $speciality,
+                    'status' => 'success',
+                    'code' => 200
+                );
+            
+            }else{
+                $data = array(
+                    'message' => 'No tienes permisos de esta operacion',
+                    'status' => 'error',
+                    'code' => 400 
+                );
             }
-
-            //Actualizar el registro
-            $speciality = Specialty::where('id', $id)->update($params_array);
-
-            $data = array(
-                'speciality' => $speciality,
-                'status' => 'success',
-                'code' => 200
-            );
         
         }else{
 
@@ -124,29 +151,43 @@ class SpecialistController extends Controller
         $checkToken = $jwtAuth->checkToken($hash);
 
         if($checkToken){
+            
+            // Validar permisos de Administrador
+            $adminAuth = new AdminAuth();
+            $user = $adminAuth->auth($hash);
 
-            // Validar
-            $speciality = Specialty::find($id);
+            if($user == true){
 
-            if($speciality != null){
-               
-                $speciality->delete();
+                // Validar
+                $speciality = Specialty::find($id);
 
-                $data = array(
-                    'speciality' => $speciality,
-                    'code' => 200,
-                    'status' => 'success'
-                );
-               
+                if($speciality != null){
+                
+                    $speciality->delete();
 
+                    $data = array(
+                        'speciality' => $speciality,
+                        'code' => 200,
+                        'status' => 'success'
+                    );               
+
+                }else{
+                
+                    $data = array(
+                        'message' => 'Especiliadad no encontrada',
+                        'status' => 'error',
+                        'code' => 400
+                    );
+                }
+            
             }else{
-              
                 $data = array(
-                    'message' => 'Especiliadad no encontrada',
+                    'message' => 'No tienes permisos de esta operacion',
                     'status' => 'error',
-                    'code' => 400
+                    'code' => 400 
                 );
-            }
+
+            }           
            
 
         }else{

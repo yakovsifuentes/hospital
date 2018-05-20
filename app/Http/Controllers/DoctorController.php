@@ -9,6 +9,7 @@ use App\Http\Requests;
 use App\Helpers\JwtAuth;
 use App\Doctor;
 use App\specialty;
+use App\Helpers\AdminAuth;
 
 class DoctorController extends Controller
 {
@@ -50,41 +51,56 @@ class DoctorController extends Controller
         $checkToken = $jwtAuth->checkToken($hash);
 
         if($checkToken){
-            // Recoger los datos
-            $json = $request->input('json',null);
-            $params = json_decode($json);
-            $params_array = json_decode($json, true);
 
-            // Validar los datos
-            $validate = \Validator::make($params_array,[
-                'name' => 'required',
-                'turn' => 'required',
-                'patients_sub' => 'required',
-                'weekend' => 'required',
-                'status' => 'required',
-                'id_specialty' => 'required'
-            ]);
+            // Validar permisos Administrador
+            $adminAuth = new AdminAuth();
+            $user = $adminAuth->auth($hash);
 
-            if($validate->fails()){
-                return response()->json($validate->errors(),400);
-            }
-            
-            $doctor = New doctor();
-            
-            $doctor->id_specialty = $params->id_specialty;
-            $doctor->name = $params->name;
-            $doctor->turn = $params->turn;
-            $doctor->patients_sub = $params->patients_sub;
-            $doctor->weekend = $params->weekend;
-            $doctor->status = $params->status;
+            if($user == true){
+                // Recoger los datos
+                $json = $request->input('json',null);
+                $params = json_decode($json);
+                $params_array = json_decode($json, true);
 
-            $doctor->save();
+                // Validar los datos
+                $validate = \Validator::make($params_array,[
+                    'name' => 'required',
+                    'turn' => 'required',
+                    'patients_sub' => 'required',
+                    'weekend' => 'required',
+                    'status' => 'required',
+                    'id_specialty' => 'required'
+                ]);
 
-            $data = array(
-                'doctor' => $doctor,
-                'status' => 'success',
-                'code' => 200
-            );
+                if($validate->fails()){
+                    return response()->json($validate->errors(),400);
+                }
+                
+                $doctor = New doctor();
+                
+                $doctor->id_specialty = $params->id_specialty;
+                $doctor->name = $params->name;
+                $doctor->turn = $params->turn;
+                $doctor->patients_sub = $params->patients_sub;
+                $doctor->weekend = $params->weekend;
+                $doctor->status = $params->status;
+
+                $doctor->save();
+
+                $data = array(
+                    'doctor' => $doctor,
+                    'status' => 'success',
+                    'code' => 200
+                );
+             
+            }else{
+                $data = array(
+                    'message' => 'No tienes permisos de esta operacion',
+                    'status' => 'error',
+                    'code' => 400 
+                );
+
+            }            
 
         }else{
             $data = array(

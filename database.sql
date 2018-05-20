@@ -16,6 +16,8 @@ CONSTRAINT	pk_user PRIMARY KEY(id)
 CREATE TABLE specialtys(
 id 		int(255) auto_increment not null,
 name	varchar(255),
+created_at varchar(255),
+updated_at varchar(255)
 CONSTRAINT pk_special PRIMARY KEY(id)
 )ENGINE = InnoDb;
 
@@ -45,7 +47,6 @@ updated_at		timestamp,
 CONSTRAINT pk_doctors PRIMARY KEY(id),
 CONSTRAINT fk_doctors_speciality FOREIGN KEY(id) REFERENCES specialtys(id)
 )ENGINE=InnoDb;
-
 
 
 CREATE TABLE appointments(
