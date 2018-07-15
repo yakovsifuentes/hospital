@@ -56,7 +56,9 @@ class PatientController extends Controller
                 'name' => 'required',
                 'rfc' => 'required',
                 'phone' => 'required',
-                'origin' => 'required'                
+                'origin' => 'required',
+                'turn' => 'required',
+                'type_patient' => 'required'                
             ]);
 
             if($validate->fails()){
@@ -68,6 +70,8 @@ class PatientController extends Controller
             $patient->rfc = $params->rfc;
             $patient->phone = $params->phone;
             $patient->origin = $params->origin;
+            $patient->turn = $params->turn;
+            $patient->type_patient = $params->type_patient;
 
             $patient->save();
 
@@ -144,7 +148,9 @@ class PatientController extends Controller
                 'name' => 'required',
                 'rfc' => 'required',
                 'phone' => 'required',
-                'origin' => 'required'                
+                'origin' => 'required',
+                'turn' => 'required',
+                'type_patient' => 'required'                
             ]);
 
             if($validate->fails()){
@@ -180,10 +186,10 @@ class PatientController extends Controller
         if($checkToken){
 
             $patient = Patient::find($id);
-
+            
             if($patient != null){
                 
-                $patient->destroy();
+                $patient->delete();
                 
                 $data = array(
                     'doctor' => $patient,

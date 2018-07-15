@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class appointment extends Model
 {
-    protected $table = 'appointments';
+    protected $table = ['id'];
 
 
     public function user(){

@@ -20,7 +20,8 @@ Route::post('/api/login','UserController@login');
 Route::post('/api/register','UserController@register');
 
 
-Route::resource('/api/appointment', 'AppointmentController');
+Route::post('/api/appointment/store', 'AppointmentController@store');
+Route::get('/api/appointment/{rfc}','AppointmentController@index');
 
 Route::resource('/api/doctor','DoctorController');
 

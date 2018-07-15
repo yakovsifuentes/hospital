@@ -11,17 +11,17 @@ use Illuminate\Support\Facades\DB;
 use App\User;
 
 class UserController extends Controller{
-    
+
     public function register(Request $request){
-    	
+
     	// Recibir parametros
     	$json = $request->input('json', null);
     	$params = json_decode($json);
 
     	$name = (!is_null ($json) && isset($params->name)) ? $params->name : null;
     	$password = (!is_null ($json) && isset($params->password)) ? $params->password : null;
-    	$rol = (!is_null ($json) && isset($params->rol)) ? $params->rol : null;		
-    	
+    	$rol = (!is_null ($json) && isset($params->rol)) ? $params->rol : null;
+
     	if(!is_null($name) && !is_null($password) && !is_null($rol)){
 
     		$user = new User();
@@ -67,7 +67,7 @@ class UserController extends Controller{
 
 
     public function login(Request $request){
-        
+
         $JwtAuth = new JwtAuth();
 
         // Recibir los datos por POST
@@ -77,30 +77,30 @@ class UserController extends Controller{
 		// Validar los datos enviados
         $name = (!is_null($json) && isset($params->name)) ? $params->name : null;
         $password = (!is_null($json) && isset($params->password)) ? $params->password : null;
-		$getToken = (!is_null($json) && isset($params->getToken)) ? $params->getToken : null; 
+		$getToken = (!is_null($json) && isset($params->getToken)) ? $params->getToken : null;
 
 		// cifrar el password
 		$pwd = hash('sha256', $password);
 
 		if(!is_null($name) && !is_null($password) && ($getToken == null || $getToken == 'false')){
-			
+
 			// Obtener el token codificado
 			$singup = $JwtAuth->signup($name, $pwd);
 
 		}elseif($getToken != null){
-			
+
 			// Obtener el token decodificado
 			$singup = $JwtAuth->signup($name, $pwd, $getToken);
 
 		}else{
-			
+
 			$singup = array(
 				'status' => 'error',
 				'message' => 'Envia tus datos por post'
 			);
 		 }
-		 
-		 return response()->json($singup);		
+
+		 return response()->json($singup);
 	}
-	
+
 }
